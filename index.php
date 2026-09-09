@@ -1,4 +1,10 @@
 <?php
+// Before install completes, send visitors to the setup wizard
+if (!file_exists(__DIR__ . '/config/install.lock') || !file_exists(__DIR__ . '/config/database.php')) {
+    header('Location: install/');
+    exit();
+}
+
 $page_title = "Home";
 require_once 'layouts/header.php';
 

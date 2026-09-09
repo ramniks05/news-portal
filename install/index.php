@@ -4,6 +4,18 @@ if (file_exists('../config/install.lock')) {
     exit();
 }
 
+$install_error = '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    require_once __DIR__ . '/install_runner.php';
+    try {
+        news_portal_run_install($_POST);
+        header('Location: index.php?finish=success');
+        exit();
+    } catch (Throwable $e) {
+        $install_error = $e->getMessage();
+    }
+}
+
 $php_version = phpversion();
 $is_php_ok = version_compare($php_version, '7.4.0', '>=');
 $is_config_writable = is_writable('../config/');
@@ -11,6 +23,9 @@ $is_uploads_writable = is_writable('../uploads/');
 $is_htaccess_writable = is_writable('../');
 
 $step = isset($_GET['finish']) ? 'success' : 1;
+if ($install_error !== '') {
+    $step = 3;
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -102,7 +117,15 @@ $step = isset($_GET['finish']) ? 'success' : 1;
                 </div>
             <?php else: ?>
 
-                <form action="process.php" method="POST" @submit="handleSubmit">
+                <?php if ($install_error !== ''): ?>
+                    <div class="mb-6 p-4 rounded-2xl bg-red-50 border border-red-100 text-red-700 text-sm font-medium">
+                        <i class="fa-solid fa-circle-exclamation mr-1"></i>
+                        <?= htmlspecialchars($install_error) ?>
+                        <div class="mt-2 text-xs text-red-600">Use DB Host <strong>localhost</strong> and exact credentials from Hostinger → Databases.</div>
+                    </div>
+                <?php endif; ?>
+
+                <form action="index.php" method="POST" @submit="handleSubmit">
 
                     <div x-show="step === 1" class="animate-in space-y-6">
                         <h3 class="text-xl font-bold text-slate-800 mb-4">System Requirements</h3>
@@ -145,6 +168,7 @@ $step = isset($_GET['finish']) ? 'success' : 1;
                             <div>
                                 <label class="block text-[10px] font-black text-slate-500 uppercase mb-2">DB Host</label>
                                 <input type="text" name="db_host" x-model="db.host" required class="w-full px-4 py-3 rounded-xl border-2 border-slate-100 focus:border-indigo-500 outline-none transition">
+                                <p class="text-[10px] text-slate-400 mt-1">On Hostinger use <strong>localhost</strong></p>
                             </div>
                             <div>
                                 <label class="block text-[10px] font-black text-slate-500 uppercase mb-2">Database Name</label>
@@ -221,20 +245,20 @@ $step = isset($_GET['finish']) ? 'success' : 1;
     <script>
         function installWizard() {
             return {
-                step: <?= is_numeric($step) ? $step : 4 ?>,
+                step: <?= is_numeric($step) ? (int)$step : 4 ?>,
                 isLoading: false,
                 showPass: false,
 
                 db: {
                     host: 'localhost',
-                    name: '',
-                    user: '',
+                    name: <?= json_encode($_POST['db_name'] ?? '') ?>,
+                    user: <?= json_encode($_POST['db_user'] ?? '') ?>,
                     pass: ''
                 },
                 admin: {
-                    site_name: '',
-                    name: '',
-                    email: '',
+                    site_name: <?= json_encode($_POST['site_name'] ?? '') ?>,
+                    name: <?= json_encode($_POST['admin_name'] ?? '') ?>,
+                    email: <?= json_encode($_POST['admin_email'] ?? '') ?>,
                     pass: '',
                     confirm: ''
                 },
