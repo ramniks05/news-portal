@@ -59,7 +59,6 @@ try {
     die(\"Database connection failed.\");
 }
 ?>";
-    file_put_contents('../config/database.php', $db_config_content);
 
     $protocol = (
         (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ||
@@ -84,26 +83,26 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 ?>";
-    file_put_contents('../config/constants.php', $const_file_content);
+    $uri_prefix = ($current_dir === '') ? '' : $current_dir;
+    $error_doc = ($current_dir === '') ? '/404.php' : $current_dir . '/404.php';
+
     $htaccess_content = "RewriteEngine On
 RewriteBase $rewrite_base
 
 # Custom 404
-ErrorDocument 404 $current_dir/404.php
+ErrorDocument 404 $error_doc
 
-# Exclude Admin Folder
-RewriteCond %{REQUEST_URI} ^" . $current_dir . "/admin/ [NC]
+# Keep admin, handlers, and installer as real PHP endpoints
+RewriteCond %{REQUEST_URI} ^" . $uri_prefix . "/admin/ [NC,OR]
+RewriteCond %{REQUEST_URI} ^" . $uri_prefix . "/handlers/ [NC,OR]
+RewriteCond %{REQUEST_URI} ^" . $uri_prefix . "/install/ [NC]
 RewriteRule .* - [L]
 
-# Exclude public handlers (keep POST body)
-RewriteCond %{REQUEST_URI} ^" . $current_dir . "/handlers/ [NC]
-RewriteRule .* - [L]
-
-# Hide .php extension
+# Hide .php extension (public pages only)
 RewriteCond %{THE_REQUEST} ^[A-Z]{3,}\\s([^.]+)\\.php [NC]
 RewriteRule ^ %1 [R=301,L]
 
-# Rewrite Rules for News
+# Pretty URLs
 RewriteRule ^article/([^/]+)/?$ article.php?slug=\$1 [L,QSA]
 RewriteRule ^category/([^/]+)/?$ category.php?slug=\$1 [L,QSA]
 RewriteRule ^tag/([^/]+)/?$ tag.php?slug=\$1 [L,QSA]
@@ -113,29 +112,48 @@ RewriteRule ^rss/?$ rss.php [L,QSA]
 RewriteRule ^sitemap\\.xml$ sitemap.php [L,QSA]
 RewriteRule ^sitemap/?$ sitemap.php [L,QSA]
 
-# General .php hiding
+# Map extensionless URLs to .php files
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{REQUEST_FILENAME}\\.php -f
 RewriteRule ^(.*)\$ \$1.php [L]
 
-# Fallback unknown paths to 404
+# Unknown paths → 404 page
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^ 404.php [L]";
 
-    file_put_contents('../.htaccess', $htaccess_content);
+    if (file_put_contents('../config/database.php', $db_config_content) === false) {
+        throw new Exception('Could not write config/database.php. Check config folder permissions.');
+    }
 
-    file_put_contents('../config/install.lock', date('Y-m-d H:i:s') . " - Installed by $admin_email");
+    if (file_put_contents('../config/constants.php', $const_file_content) === false) {
+        throw new Exception('Could not write config/constants.php. Check config folder permissions.');
+    }
+
+    if (file_put_contents('../.htaccess', $htaccess_content) === false) {
+        throw new Exception('Could not write .htaccess. Check folder permissions.');
+    }
+
+    if (file_put_contents('../config/install.lock', date('Y-m-d H:i:s') . " - Installed by $admin_email") === false) {
+        throw new Exception('Could not write install.lock. Check config folder permissions.');
+    }
 
     header("Location: index.php?finish=success");
     exit();
 } catch (PDOException $e) {
+    http_response_code(500);
     die("<div style='font-family:sans-serif; padding:50px; text-align:center;'>
             <h2 style='color:red;'>Installation Error</h2>
-            <p>Could not connect to the database. Please check your credentials.</p>
-            <p style='color:#666;'>Details: " . $e->getMessage() . "</p>
+            <p>Could not connect to the database or import schema.</p>
+            <p style='color:#666;'>Details: " . htmlspecialchars($e->getMessage()) . "</p>
+            <p style='color:#666;'>Tip: on Hostinger use host <strong>localhost</strong> and the exact DB name/user from hPanel → Databases.</p>
             <a href='index.php' style='color:blue;'>Go Back and Retry</a>
          </div>");
 } catch (Exception $e) {
-    die("System Error: " . $e->getMessage());
+    http_response_code(500);
+    die("<div style='font-family:sans-serif; padding:50px; text-align:center;'>
+            <h2 style='color:red;'>System Error</h2>
+            <p>" . htmlspecialchars($e->getMessage()) . "</p>
+            <a href='index.php' style='color:blue;'>Go Back and Retry</a>
+         </div>");
 }
