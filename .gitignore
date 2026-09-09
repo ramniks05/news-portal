@@ -1,0 +1,20 @@
+# Local install / secrets (created by installer — never commit)
+/config/database.php
+/config/constants.php
+/config/install.lock
+
+# Uploaded media
+/uploads/**
+!/uploads/.gitkeep
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.log
+.vscode/
+.idea/
+
+# Temp / local
+Hostinger-Upload.zip
+_*.php
+_*.txt
