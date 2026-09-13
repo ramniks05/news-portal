@@ -133,6 +133,62 @@ if (empty($_SESSION['csrf_token'])) {
                             </label>
                         </div>
                     </div>
+
+                    <div class="border-t border-slate-200 dark:border-slate-700 pt-6 mt-2">
+                        <h4 class="text-sm font-bold text-slate-800 dark:text-white mb-4">Weather widget</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">City name</label>
+                                <input type="text" name="weather_city" value="<?= htmlspecialchars(get_setting('weather_city', 'Mumbai')) ?>" class="w-full rounded-md border border-slate-400 px-3 py-2 text-sm dark:bg-slate-900 dark:border-slate-600 dark:text-white">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Latitude</label>
+                                <input type="text" name="weather_lat" value="<?= htmlspecialchars(get_setting('weather_lat', '19.0760')) ?>" class="w-full rounded-md border border-slate-400 px-3 py-2 text-sm dark:bg-slate-900 dark:border-slate-600 dark:text-white">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Longitude</label>
+                                <input type="text" name="weather_lon" value="<?= htmlspecialchars(get_setting('weather_lon', '72.8777')) ?>" class="w-full rounded-md border border-slate-400 px-3 py-2 text-sm dark:bg-slate-900 dark:border-slate-600 dark:text-white">
+                            </div>
+                        </div>
+                        <p class="text-[11px] text-slate-400 mt-2">Find lat/lon on Google Maps → right click place → coordinates.</p>
+                    </div>
+
+                    <div class="border-t border-slate-200 dark:border-slate-700 pt-6 mt-2">
+                        <h4 class="text-sm font-bold text-slate-800 dark:text-white mb-2">Sales demo credentials (public page)</h4>
+                        <p class="text-xs text-slate-500 mb-4">Shown on <code>/get-portal</code> when Demo Mode is ON. Create matching admin user in Users / Profile.</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="flex items-center justify-between bg-slate-50 dark:bg-slate-700/50 p-4 rounded-md border border-slate-200 dark:border-slate-600 md:col-span-2">
+                                <div>
+                                    <span class="block text-sm font-bold text-slate-800 dark:text-white">Show demo login on Get Portal page</span>
+                                </div>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="hidden" name="demo_mode" value="0">
+                                    <input type="checkbox" name="demo_mode" value="1" class="sr-only peer" <?= get_setting('demo_mode', '1') == '1' ? 'checked' : '' ?>>
+                                    <div class="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer dark:bg-slate-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                                </label>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Demo email (display)</label>
+                                <input type="email" name="demo_admin_email" value="<?= htmlspecialchars(get_setting('demo_admin_email', 'demo@digitalcreatorss.com')) ?>" class="w-full rounded-md border border-slate-400 px-3 py-2 text-sm dark:bg-slate-900 dark:border-slate-600 dark:text-white">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Demo password (display)</label>
+                                <input type="text" name="demo_admin_password" value="<?= htmlspecialchars(get_setting('demo_admin_password', 'Demo@12345')) ?>" class="w-full rounded-md border border-slate-400 px-3 py-2 text-sm dark:bg-slate-900 dark:border-slate-600 dark:text-white">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Sales WhatsApp</label>
+                                <input type="text" name="sales_whatsapp" value="<?= htmlspecialchars(get_setting('sales_whatsapp', '918851613806')) ?>" class="w-full rounded-md border border-slate-400 px-3 py-2 text-sm dark:bg-slate-900 dark:border-slate-600 dark:text-white">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Sales phone</label>
+                                <input type="text" name="sales_phone" value="<?= htmlspecialchars(get_setting('sales_phone', '+91-8851613806')) ?>" class="w-full rounded-md border border-slate-400 px-3 py-2 text-sm dark:bg-slate-900 dark:border-slate-600 dark:text-white">
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Sales email</label>
+                                <input type="email" name="sales_email" value="<?= htmlspecialchars(get_setting('sales_email', 'support@digitalcreatorss.com')) ?>" class="w-full rounded-md border border-slate-400 px-3 py-2 text-sm dark:bg-slate-900 dark:border-slate-600 dark:text-white">
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div x-show="activeTab === 'media'" data-tab="media" x-cloak class="space-y-6 animate-fade-in">

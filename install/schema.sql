@@ -161,6 +161,18 @@ CREATE TABLE `contact_messages` (
   KEY `status_idx` (`status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=[[COLLATION]];
 
+CREATE TABLE `e_news_editions` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `title` varchar(255) NOT NULL,
+  `edition_date` date NOT NULL,
+  `pdf_path` varchar(255) NOT NULL,
+  `cover_image` varchar(255) DEFAULT NULL,
+  `status` enum('published','draft') DEFAULT 'published',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `edition_date_idx` (`edition_date`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=[[COLLATION]];
+
 ALTER TABLE `comments` ADD CONSTRAINT `comments_ibfk_1` FOREIGN KEY (`post_id`) REFERENCES `posts` (`id`) ON DELETE CASCADE;
 ALTER TABLE `post_tags` ADD CONSTRAINT `post_tags_ibfk_1` FOREIGN KEY (`post_id`) REFERENCES `posts` (`id`) ON DELETE CASCADE;
 ALTER TABLE `post_tags` ADD CONSTRAINT `post_tags_ibfk_2` FOREIGN KEY (`tag_id`) REFERENCES `tags` (`id`) ON DELETE CASCADE;

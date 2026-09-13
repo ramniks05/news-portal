@@ -112,6 +112,11 @@ $is_post_section = in_array($current_page, $post_related_pages);
                 <span class="ml-3">Newsletter</span>
             </a>
 
+            <a href="e-news.php" class="group flex items-center rounded-md px-3 py-2.5 text-sm font-medium transition-all duration-200 <?= is_active('e-news.php') ?>">
+                <i class="fa-solid fa-file-pdf w-6 text-center text-lg opacity-80 group-hover:opacity-100"></i>
+                <span class="ml-3">E-News PDF</span>
+            </a>
+
             <div class="mt-6 mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-slate-500">
                 Static Pages
             </div>

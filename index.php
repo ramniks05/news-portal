@@ -1,10 +1,4 @@
 <?php
-// Before install completes, send visitors to the setup wizard
-if (!file_exists(__DIR__ . '/config/install.lock') || !file_exists(__DIR__ . '/config/database.php')) {
-    header('Location: install/');
-    exit();
-}
-
 $page_title = "Home";
 require_once 'layouts/header.php';
 
@@ -218,6 +212,53 @@ if (empty($latest) && $total_published > 0) {
         </div>
 
         <aside class="lg:col-span-1 space-y-12">
+            <?php
+            require_once __DIR__ . '/helpers/weather_functions.php';
+            $weather = get_weather_data();
+            $latest_enews = get_latest_e_news(3);
+            ?>
+            <div class="bg-gradient-to-br from-sky-500 to-indigo-600 rounded-3xl p-6 text-white shadow-lg shadow-indigo-100">
+                <div class="flex items-start justify-between mb-4">
+                    <div>
+                        <p class="text-[10px] font-black uppercase tracking-widest text-white/70">Weather</p>
+                        <h4 class="text-xl font-black"><?= htmlspecialchars($weather['city']) ?></h4>
+                    </div>
+                    <i class="fa-solid <?= htmlspecialchars($weather['icon']) ?> text-3xl text-white/90"></i>
+                </div>
+                <?php if ($weather['temp'] !== null): ?>
+                    <p class="text-4xl font-black mb-1"><?= (int)$weather['temp'] ?>°C</p>
+                    <p class="text-sm text-white/80 mb-4"><?= htmlspecialchars($weather['label']) ?></p>
+                    <div class="grid grid-cols-2 gap-3 text-xs font-bold text-white/90">
+                        <div class="bg-white/10 rounded-xl px-3 py-2">Humidity<br><span class="text-base"><?= (int)$weather['humidity'] ?>%</span></div>
+                        <div class="bg-white/10 rounded-xl px-3 py-2">Wind<br><span class="text-base"><?= (int)$weather['wind'] ?> km/h</span></div>
+                    </div>
+                <?php else: ?>
+                    <p class="text-sm text-white/80">Weather temporarily unavailable.</p>
+                <?php endif; ?>
+            </div>
+
+            <?php if (!empty($latest_enews)): ?>
+            <div class="bg-white border border-slate-100 rounded-3xl p-6 shadow-soft">
+                <div class="flex items-center justify-between mb-4">
+                    <h4 class="text-sm font-black text-slate-900 uppercase tracking-widest">E-News PDF</h4>
+                    <a href="<?= BASE_URL ?>/e-news" class="text-[10px] font-black uppercase tracking-widest text-indigo-600">All</a>
+                </div>
+                <div class="space-y-3">
+                    <?php foreach ($latest_enews as $ed): ?>
+                        <a href="<?= BASE_URL . '/' . ltrim($ed['pdf_path'], '/') ?>" target="_blank" class="flex items-center gap-3 group">
+                            <div class="h-10 w-10 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center flex-shrink-0">
+                                <i class="fa-solid fa-file-pdf"></i>
+                            </div>
+                            <div class="min-w-0">
+                                <p class="text-sm font-bold text-slate-800 group-hover:text-indigo-600 truncate"><?= htmlspecialchars($ed['title']) ?></p>
+                                <p class="text-[11px] text-slate-400"><?= date('d M Y', strtotime($ed['edition_date'])) ?></p>
+                            </div>
+                        </a>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+            <?php endif; ?>
+
             <div class="bg-white p-4 rounded-3xl border border-slate-200 shadow-sm text-center">
                 <span class="text-[10px] text-slate-400 uppercase tracking-widest block mb-2">- Advertisement -</span>
                 <?= get_ad('sidebar_top') ?>

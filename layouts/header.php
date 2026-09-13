@@ -173,6 +173,10 @@ if (!function_exists('category_url')) {
                 <span class="text-slate-600">|</span>
                 <a href="<?= BASE_URL ?>/contact-us" class="hover:text-white transition">Advertise</a>
                 <span class="text-slate-600">|</span>
+                <a href="<?= BASE_URL ?>/e-news" class="hover:text-white transition">E-News</a>
+                <span class="text-slate-600">|</span>
+                <a href="<?= BASE_URL ?>/get-portal" class="hover:text-white transition">Get Portal</a>
+                <span class="text-slate-600">|</span>
                 <a href="<?= BASE_URL ?>/about-us" class="hover:text-white transition">About Us</a>
                 <span class="text-slate-600">|</span>
                 <a href="<?= BASE_URL ?>/contact-us" class="hover:text-white transition">Contact Us</a>
@@ -353,6 +357,8 @@ if (!function_exists('category_url')) {
                     <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 px-2">Pages</h3>
                     <nav class="space-y-1">
                         <a href="<?= BASE_URL ?>/about-us" class="block px-3 py-2 text-sm text-slate-600 hover:text-indigo-600 transition">About Us</a>
+                        <a href="<?= BASE_URL ?>/e-news" class="block px-3 py-2 text-sm text-slate-600 hover:text-indigo-600 transition">E-News PDF</a>
+                        <a href="<?= BASE_URL ?>/get-portal" class="block px-3 py-2 text-sm text-slate-600 hover:text-indigo-600 transition">Get This Portal</a>
                         <a href="<?= BASE_URL ?>/contact-us" class="block px-3 py-2 text-sm text-slate-600 hover:text-indigo-600 transition">Contact Us</a>
                         <a href="<?= BASE_URL ?>/privacy-policy" class="block px-3 py-2 text-sm text-slate-600 hover:text-indigo-600 transition">Privacy Policy</a>
                         <a href="<?= BASE_URL ?>/terms" class="block px-3 py-2 text-sm text-slate-600 hover:text-indigo-600 transition">Terms & Conditions</a>
