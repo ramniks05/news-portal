@@ -189,9 +189,10 @@ $rss_presets = [
                             <option value="<?= htmlspecialchars($key) ?>" <?= $default_query === $key ? 'selected' : '' ?>><?= htmlspecialchars($label) ?></option>
                         <?php endforeach; ?>
                     </select>
-                    <p class="text-[11px] text-slate-400 mb-1">For NewsAPI/GNews, type a keyword instead (edit after switching provider), e.g. India</p>
-                    <input type="text" name="query_text" value="" placeholder="Or custom RSS URL / keyword"
+                    <p class="text-[11px] text-slate-400 mb-1">For <strong>NewsAPI / GNews</strong> type a keyword here (example: <code>India</code>). RSS feed dropdown is ignored when keyword is filled.</p>
+                    <input type="text" name="query_text" value="India" placeholder="Keyword e.g. India, cricket, technology"
                         class="w-full rounded-md border border-slate-300 dark:border-slate-600 dark:bg-slate-900 dark:text-white px-3 py-2 text-sm">
+                    <p class="text-[11px] text-amber-700 mt-2">Live Hostinger: NewsAPI free keys often fail. Use <strong>RSS</strong> or <strong>Full site refresh</strong>.</p>
                 </div>
                 <div>
                     <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">How many</label>

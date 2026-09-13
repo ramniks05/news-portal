@@ -61,7 +61,14 @@ if ($action === 'fetch') {
     $provider = in_array($_POST['provider'] ?? '', ['rss', 'newsapi', 'gnews'], true) ? $_POST['provider'] : 'rss';
     $query = trim($_POST['query_text'] ?? '');
     if ($query === '') {
-        $query = trim($_POST['query'] ?? 'bbc-asia');
+        $query = trim($_POST['query'] ?? '');
+    }
+    // NewsAPI/GNews need a real keyword — never send empty
+    if ($provider !== 'rss' && $query === '') {
+        $query = 'India';
+    }
+    if ($provider === 'rss' && $query === '') {
+        $query = 'bbc-asia';
     }
     $limit = (int)($_POST['limit'] ?? 8);
     $key = trim($_POST['api_key'] ?? '');
@@ -80,6 +87,21 @@ if ($action === 'fetch') {
     }
 
     [$articles, $err] = news_api_fetch_articles($provider, $key, $query, $limit);
+
+    // Live Hostinger: NewsAPI free keys often fail — auto-fall back to RSS so content still loads
+    $usedFallback = false;
+    if ($err && in_array($provider, ['newsapi', 'gnews'], true)) {
+        [$articles, $rssErr] = news_api_fetch_articles('rss', '', 'bbc-asia', $limit);
+        if (!$rssErr && !empty($articles)) {
+            $usedFallback = true;
+            $err = null;
+            $provider = 'rss';
+            $query = 'bbc-asia';
+        } else {
+            $err = $err . ($rssErr ? ' | RSS fallback also failed: ' . $rssErr : '');
+        }
+    }
+
     if ($err) {
         $_SESSION['error'] = $err;
         unset($_SESSION['news_import_preview']);
@@ -95,7 +117,7 @@ if ($action === 'fetch') {
     }
 
     if (empty($clean)) {
-        $_SESSION['error'] = 'No articles found for that query. Try another keyword.';
+        $_SESSION['error'] = 'No articles found for that query. Try keyword "India", or use Provider = RSS / Full site refresh.';
         unset($_SESSION['news_import_preview']);
         header('Location: ../import-news.php');
         exit();
@@ -108,7 +130,7 @@ if ($action === 'fetch') {
         'category_id' => (int)($_POST['category_id'] ?? 0),
         'status' => in_array($_POST['status'] ?? '', ['draft', 'published'], true) ? $_POST['status'] : 'draft',
     ];
-    $_SESSION['success'] = count($clean) . ' articles fetched. Select which ones to import.';
+    $_SESSION['success'] = count($clean) . ' articles fetched' . ($usedFallback ? ' via RSS fallback (NewsAPI blocked on this server)' : '') . '. Select which ones to import.';
     header('Location: ../import-news.php');
     exit();
 }

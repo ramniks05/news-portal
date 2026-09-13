@@ -131,8 +131,20 @@ function news_api_fetch_articles($provider, $api_key, $query, $limit = 10)
     if ($api_key === '') {
         return [null, 'API key is required for NewsAPI/GNews. Or choose RSS (no key) instead.'];
     }
-    if ($query === '') {
-        $query = 'India';
+
+    // If user left RSS preset selected (e.g. bbc-asia), map to a real keyword
+    $presets = news_api_rss_presets();
+    if ($query === '' || isset($presets[$query])) {
+        $map = [
+            'bbc-asia' => 'India Asia',
+            'bbc-world' => 'world news',
+            'bbc-tech' => 'technology',
+            'bbc-business' => 'business economy',
+            'bbc-politics' => 'politics',
+            'bbc-sport' => 'sports',
+            'nyt-world' => 'world',
+        ];
+        $query = $map[$query] ?? 'India';
     }
 
     if ($provider === 'gnews') {
@@ -144,7 +156,7 @@ function news_api_fetch_articles($provider, $api_key, $query, $limit = 10)
         ]);
         [$data, $err] = news_api_http_get($url);
         if ($err) {
-            return [null, $err];
+            return [null, $err . ' Tip: on live hosting, use Provider = RSS (no key) or Full site refresh.'];
         }
         if (!empty($data['errors']) || (isset($data['message']) && empty($data['articles']))) {
             return [null, $data['errors'][0] ?? ($data['message'] ?? 'GNews error')];
@@ -165,43 +177,91 @@ function news_api_fetch_articles($provider, $api_key, $query, $limit = 10)
                 $out[] = $row;
             }
         }
+        if (empty($out)) {
+            return [null, 'GNews returned 0 articles for "' . $query . '". Try another keyword.'];
+        }
         return [$out, null];
     }
 
-    // Default: NewsAPI.org
-    $url = 'https://newsapi.org/v2/everything?' . http_build_query([
+    // NewsAPI.org — try top-headlines first (more reliable on free plan), then everything
+    return news_api_fetch_newsapi($api_key, $query, $limit);
+}
+
+function news_api_fetch_newsapi($api_key, $query, $limit = 10)
+{
+    $attempts = [];
+
+    // 1) Top headlines by query (India-focused default country)
+    $url1 = 'https://newsapi.org/v2/top-headlines?' . http_build_query([
+        'q' => $query,
+        'language' => 'en',
+        'pageSize' => $limit,
+        'apiKey' => $api_key,
+    ]);
+    $attempts[] = $url1;
+
+    // 2) Top headlines India country
+    $url2 = 'https://newsapi.org/v2/top-headlines?' . http_build_query([
+        'country' => 'in',
+        'pageSize' => $limit,
+        'apiKey' => $api_key,
+    ]);
+    $attempts[] = $url2;
+
+    // 3) Everything search
+    $url3 = 'https://newsapi.org/v2/everything?' . http_build_query([
         'q' => $query,
         'language' => 'en',
         'sortBy' => 'publishedAt',
         'pageSize' => $limit,
         'apiKey' => $api_key,
     ]);
-    [$data, $err] = news_api_http_get($url);
-    if ($err) {
-        return [null, $err];
-    }
-    if (($data['status'] ?? '') === 'error') {
-        return [null, $data['message'] ?? 'NewsAPI error'];
-    }
-    $raw = $data['articles'] ?? [];
-    $out = [];
-    foreach ($raw as $a) {
-        $row = news_api_normalize_article([
-            'title' => $a['title'] ?? '',
-            'description' => $a['description'] ?? '',
-            'content' => $a['content'] ?? '',
-            'url' => $a['url'] ?? '',
-            'image' => $a['urlToImage'] ?? '',
-            'source' => $a['source']['name'] ?? 'NewsAPI',
-            'publishedAt' => $a['publishedAt'] ?? '',
-        ], 'newsapi');
-        if ($row) {
-            $out[] = $row;
+    $attempts[] = $url3;
+
+    $lastErr = null;
+    foreach ($attempts as $url) {
+        [$data, $err] = news_api_http_get($url);
+        if ($err) {
+            $lastErr = $err;
+            continue;
+        }
+        if (($data['status'] ?? '') === 'error') {
+            $lastErr = $data['message'] ?? 'NewsAPI error';
+            // Typical free-plan live-server block
+            if (stripos($lastErr, 'localhost') !== false || stripos($lastErr, 'developers') !== false) {
+                return [null, 'NewsAPI free key works only on localhost. On live Hostinger use Provider = RSS or click Full site refresh (no key needed). Detail: ' . $lastErr];
+            }
+            continue;
+        }
+        $raw = $data['articles'] ?? [];
+        $out = [];
+        foreach ($raw as $a) {
+            $row = news_api_normalize_article([
+                'title' => $a['title'] ?? '',
+                'description' => $a['description'] ?? '',
+                'content' => $a['content'] ?? '',
+                'url' => $a['url'] ?? '',
+                'image' => $a['urlToImage'] ?? '',
+                'source' => $a['source']['name'] ?? 'NewsAPI',
+                'publishedAt' => $a['publishedAt'] ?? '',
+            ], 'newsapi');
+            if ($row) {
+                $out[] = $row;
+            }
+        }
+        if (!empty($out)) {
+            return [array_slice($out, 0, $limit), null];
         }
     }
-    return [$out, null];
+
+    return [null, $lastErr
+        ? ('NewsAPI failed: ' . $lastErr . ' — On live site prefer RSS / Full site refresh.')
+        : ('No NewsAPI articles for "' . $query . '". Try keyword India or Technology, or use RSS.')];
 }
 
+/**
+ * @return array{0:?array,1:?string}
+ */
 function news_api_fetch_rss($feedUrl, $sourceName, $limit = 10)
 {
     [$xml, $err] = news_api_http_raw($feedUrl, 15);
