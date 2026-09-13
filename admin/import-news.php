@@ -59,7 +59,6 @@ if ($default_cat < 1 && !empty($ensured['world'])) {
     $default_cat = (int)$ensured['world'];
 }
 $default_status = $meta['status'] ?? 'published';
-$default_query = $meta['query'] ?? 'bbc-asia';
 $rss_presets = [
     'india-bbc' => 'India — BBC',
     'india-toi' => 'India — Times of India',
