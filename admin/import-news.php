@@ -2,10 +2,14 @@
 require_once 'includes/header.php';
 require_once '../config/database.php';
 require_once '../helpers/common_functions.php';
+require_once '../helpers/news_api_functions.php';
 
 if (empty($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
+
+// Ensure demo categories exist so import never fails with "category required"
+$ensured = news_api_ensure_categories($conn);
 
 $cat_stmt = $conn->query("SELECT id, name, parent_id FROM categories WHERE status = 1 ORDER BY name ASC");
 $raw_cats = $cat_stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -28,6 +32,19 @@ foreach ($parents as $parent) {
         }
     }
 }
+// Orphans (active children whose parent inactive) still list flat
+foreach ($raw_cats as $row) {
+    $already = false;
+    foreach ($categories as $c) {
+        if ((int)$c['id'] === (int)$row['id']) {
+            $already = true;
+            break;
+        }
+    }
+    if (!$already) {
+        $categories[] = ['id' => $row['id'], 'label' => $row['name']];
+    }
+}
 
 $provider = get_setting('news_api_provider', 'rss');
 $newsapi_key = get_setting('newsapi_key', '');
@@ -35,6 +52,12 @@ $gnews_key = get_setting('gnews_key', '');
 $preview = $_SESSION['news_import_preview'] ?? [];
 $meta = $_SESSION['news_import_meta'] ?? [];
 $default_cat = (int)($meta['category_id'] ?? 0);
+if ($default_cat < 1 && !empty($categories)) {
+    $default_cat = (int)$categories[0]['id'];
+}
+if ($default_cat < 1 && !empty($ensured['world'])) {
+    $default_cat = (int)$ensured['world'];
+}
 $default_status = $meta['status'] ?? 'published';
 $default_query = $meta['query'] ?? 'bbc-asia';
 $rss_presets = [
@@ -181,13 +204,17 @@ $rss_presets = [
                 <div>
                     <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Import into category *</label>
                     <select name="category_id" required class="w-full rounded-md border border-slate-300 dark:border-slate-600 dark:bg-slate-900 dark:text-white px-3 py-2 text-sm">
-                        <option value="">Select category</option>
-                        <?php foreach ($categories as $c): ?>
-                            <option value="<?= (int)$c['id'] ?>" <?= $default_cat === (int)$c['id'] ? 'selected' : '' ?>>
-                                <?= htmlspecialchars($c['label']) ?>
-                            </option>
-                        <?php endforeach; ?>
+                        <?php if (empty($categories)): ?>
+                            <option value="">No category — open this page again after refresh</option>
+                        <?php else: ?>
+                            <?php foreach ($categories as $c): ?>
+                                <option value="<?= (int)$c['id'] ?>" <?= $default_cat === (int)$c['id'] ? 'selected' : '' ?>>
+                                    <?= htmlspecialchars($c['label']) ?>
+                                </option>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
                     </select>
+                    <p class="text-[11px] text-slate-400 mt-1">Pick any category (World, Politics, etc.). One is auto-selected.</p>
                 </div>
                 <div>
                     <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Status</label>

@@ -129,10 +129,24 @@ if ($action === 'import') {
     }
 
     if ($category_id < 1) {
-        $_SESSION['error'] = 'Choose a category that already exists in your portal.';
+        $cats = news_api_ensure_categories($conn);
+        $category_id = (int)($cats['world'] ?? reset($cats) ?: 0);
+    }
+
+    if ($category_id < 1) {
+        $_SESSION['error'] = 'No category found. Go to Categories and add one (e.g. World), then try again.';
         header('Location: ../import-news.php');
         exit();
     }
+
+    $catCheck = $conn->prepare('SELECT id FROM categories WHERE id = :id');
+    $catCheck->execute([':id' => $category_id]);
+    if (!$catCheck->fetch()) {
+        $cats = news_api_ensure_categories($conn);
+        $category_id = (int)($cats['world'] ?? reset($cats) ?: 0);
+    }
+    // Reactivate if needed
+    $conn->prepare('UPDATE categories SET status = 1, show_on_menu = 1 WHERE id = :id')->execute([':id' => $category_id]);
 
     $catCheck = $conn->prepare('SELECT id FROM categories WHERE id = :id AND status = 1');
     $catCheck->execute([':id' => $category_id]);
