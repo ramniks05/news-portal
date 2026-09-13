@@ -62,6 +62,15 @@ function news_api_http_get($url, $timeout = 12)
 function news_api_rss_presets()
 {
     return [
+        // India-first
+        'india-bbc' => ['label' => 'India — BBC', 'url' => 'https://feeds.bbci.co.uk/news/world/asia/india/rss.xml'],
+        'india-toi' => ['label' => 'India — Times of India', 'url' => 'https://timesofindia.indiatimes.com/rssfeeds/-2128936835.cms'],
+        'india-toi-top' => ['label' => 'India — TOI Top Stories', 'url' => 'https://timesofindia.indiatimes.com/rssfeedstopstories.cms'],
+        'india-hindu' => ['label' => 'India — The Hindu National', 'url' => 'https://www.thehindu.com/news/national/feeder/default.rss'],
+        'india-express' => ['label' => 'India — Indian Express', 'url' => 'https://indianexpress.com/section/india/feed/'],
+        'india-ndtv' => ['label' => 'India — NDTV', 'url' => 'https://feeds.feedburner.com/ndtvnews-india-news'],
+        'india-ht' => ['label' => 'India — Hindustan Times', 'url' => 'https://www.hindustantimes.com/feeds/rss/india-news/rssfeed.xml'],
+        // Global (optional)
         'bbc-asia' => ['label' => 'BBC Asia', 'url' => 'https://feeds.bbci.co.uk/news/world/asia/rss.xml'],
         'bbc-world' => ['label' => 'BBC World', 'url' => 'https://feeds.bbci.co.uk/news/world/rss.xml'],
         'bbc-tech' => ['label' => 'BBC Technology', 'url' => 'https://feeds.bbci.co.uk/news/technology/rss.xml'],
@@ -69,6 +78,18 @@ function news_api_rss_presets()
         'bbc-politics' => ['label' => 'BBC Politics', 'url' => 'https://feeds.bbci.co.uk/news/politics/rss.xml'],
         'bbc-sport' => ['label' => 'BBC Sport', 'url' => 'https://feeds.bbci.co.uk/sport/rss.xml'],
         'nyt-world' => ['label' => 'NYTimes World', 'url' => 'https://rss.nytimes.com/services/xml/rss/nyt/World.xml'],
+    ];
+}
+
+function news_api_india_feed_map()
+{
+    return [
+        'india-news' => 'india-bbc',
+        'politics' => 'india-hindu',
+        'business' => 'india-express',
+        'sports' => 'india-toi-top',
+        'technology' => 'india-ndtv',
+        'world' => 'india-ht',
     ];
 }
 
@@ -191,16 +212,7 @@ function news_api_fetch_newsapi($api_key, $query, $limit = 10)
 {
     $attempts = [];
 
-    // 1) Top headlines by query (India-focused default country)
-    $url1 = 'https://newsapi.org/v2/top-headlines?' . http_build_query([
-        'q' => $query,
-        'language' => 'en',
-        'pageSize' => $limit,
-        'apiKey' => $api_key,
-    ]);
-    $attempts[] = $url1;
-
-    // 2) Top headlines India country
+    // Prefer India country headlines first for NewsAPI
     $url2 = 'https://newsapi.org/v2/top-headlines?' . http_build_query([
         'country' => 'in',
         'pageSize' => $limit,
@@ -208,9 +220,22 @@ function news_api_fetch_newsapi($api_key, $query, $limit = 10)
     ]);
     $attempts[] = $url2;
 
-    // 3) Everything search
+    // Then query + India country when possible
+    $url1 = 'https://newsapi.org/v2/top-headlines?' . http_build_query([
+        'q' => $query !== '' ? $query : 'India',
+        'country' => 'in',
+        'pageSize' => $limit,
+        'apiKey' => $api_key,
+    ]);
+    array_unshift($attempts, $url1);
+
+    // 3) Everything search (India-biased query)
+    $qEverything = trim($query) !== '' ? $query : 'India';
+    if (stripos($qEverything, 'india') === false) {
+        $qEverything .= ' India';
+    }
     $url3 = 'https://newsapi.org/v2/everything?' . http_build_query([
-        'q' => $query,
+        'q' => $qEverything,
         'language' => 'en',
         'sortBy' => 'publishedAt',
         'pageSize' => $limit,
@@ -565,18 +590,18 @@ function news_api_upsert_setting(PDO $conn, $key, $value)
 function news_api_ensure_categories(PDO $conn)
 {
     $defs = [
-        ['World', 'world', '#0ea5e9', 0],
+        ['India News', 'india-news', '#4f46e5', 0],
         ['Politics', 'politics', '#ef4444', 0],
-        ['Technology', 'technology', '#8b5cf6', 0],
         ['Business', 'business', '#059669', 0],
         ['Sports', 'sports', '#f59e0b', 0],
-        ['Asia', 'asia', '#4f46e5', 0],
+        ['Technology', 'technology', '#8b5cf6', 0],
+        ['World', 'world', '#0ea5e9', 0],
     ];
 
-    // Hide legacy "India News" from menu if it still exists
+    // Prefer India News on menu; hide legacy Asia slug if unused
     try {
-        $conn->exec("UPDATE categories SET show_on_menu = 0, status = 0 WHERE slug = 'india-news'");
         $conn->exec("UPDATE categories SET parent_id = 0 WHERE slug = 'politics'");
+        $conn->exec("UPDATE categories SET show_on_menu = 0 WHERE slug = 'asia'");
     } catch (Throwable $e) {
         // ignore
     }
@@ -608,9 +633,10 @@ function news_api_ensure_categories(PDO $conn)
 /**
  * Full demo refresh: wipe old posts, import RSS by category, rebuild breaking + homepage sections.
  *
+ * @param string $scope 'india' (default) or 'global'
  * @return array{ok:bool,message:string,imported:int,categories:int,breaking:int}
  */
-function news_api_full_site_refresh(PDO $conn, $author_id, $per_category = 6)
+function news_api_full_site_refresh(PDO $conn, $author_id, $per_category = 6, $scope = 'india')
 {
     if (!defined('BASE_URL')) {
         require_once __DIR__ . '/../config/constants.php';
@@ -622,16 +648,21 @@ function news_api_full_site_refresh(PDO $conn, $author_id, $per_category = 6)
     }
 
     $per_category = max(3, min(10, (int)$per_category));
+    $scope = strtolower(trim((string)$scope)) === 'global' ? 'global' : 'india';
     $cats = news_api_ensure_categories($conn);
 
-    $feedMap = [
-        'world' => 'bbc-world',
-        'politics' => 'bbc-politics',
-        'technology' => 'bbc-tech',
-        'business' => 'bbc-business',
-        'sports' => 'bbc-sport',
-        'asia' => 'bbc-asia',
-    ];
+    if ($scope === 'india') {
+        $feedMap = news_api_india_feed_map();
+    } else {
+        $feedMap = [
+            'world' => 'bbc-world',
+            'politics' => 'bbc-politics',
+            'technology' => 'bbc-tech',
+            'business' => 'bbc-business',
+            'sports' => 'bbc-sport',
+            'india-news' => 'bbc-asia',
+        ];
+    }
 
     // Wipe editorial content (keep users/settings/ads/pages)
     $conn->exec('DELETE FROM post_tags');
@@ -738,7 +769,7 @@ function news_api_full_site_refresh(PDO $conn, $author_id, $per_category = 6)
         }
     }
 
-    $msg = "Removed old posts and refreshed the site with {$imported} live stories across " . count($cats) . " categories, {$breaking} breaking items, plus hero/slider";
+    $msg = "Removed old posts and refreshed with {$imported} " . ($scope === 'india' ? 'India' : 'global') . " stories across " . count($cats) . " categories, {$breaking} breaking items, plus hero/slider";
     if ($ads_added > 0) {
         $msg .= ", and {$ads_added} demo ad banner(s)";
     }

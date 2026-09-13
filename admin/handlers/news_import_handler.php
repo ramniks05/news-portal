@@ -32,7 +32,8 @@ if ($action === 'full_refresh') {
     }
 
     $per = (int)($_POST['per_category'] ?? 6);
-    $result = news_api_full_site_refresh($conn, (int)$_SESSION['admin_id'], $per);
+    $scope = ($_POST['scope'] ?? 'india') === 'global' ? 'global' : 'india';
+    $result = news_api_full_site_refresh($conn, (int)$_SESSION['admin_id'], $per, $scope);
     unset($_SESSION['news_import_preview'], $_SESSION['news_import_meta']);
 
     if (!empty($result['ok'])) {
@@ -63,13 +64,13 @@ if ($action === 'fetch') {
     if ($query === '') {
         $query = trim($_POST['query'] ?? '');
     }
-    // NewsAPI/GNews need a real keyword — never send empty
-    if ($provider !== 'rss' && $query === '') {
-        $query = 'India';
-    }
-    if ($provider === 'rss' && $query === '') {
-        $query = 'bbc-asia';
-    }
+            if ($provider === 'rss' && $query === '') {
+                $query = 'india-bbc';
+            }
+            // NewsAPI/GNews need a real keyword — never send empty
+            if ($provider !== 'rss' && $query === '') {
+                $query = 'India';
+            }
     $limit = (int)($_POST['limit'] ?? 8);
     $key = trim($_POST['api_key'] ?? '');
     if ($key === '' && $provider !== 'rss') {
@@ -91,12 +92,12 @@ if ($action === 'fetch') {
     // Live Hostinger: NewsAPI free keys often fail — auto-fall back to RSS so content still loads
     $usedFallback = false;
     if ($err && in_array($provider, ['newsapi', 'gnews'], true)) {
-        [$articles, $rssErr] = news_api_fetch_articles('rss', '', 'bbc-asia', $limit);
+        [$articles, $rssErr] = news_api_fetch_articles('rss', '', 'india-bbc', $limit);
         if (!$rssErr && !empty($articles)) {
             $usedFallback = true;
             $err = null;
             $provider = 'rss';
-            $query = 'bbc-asia';
+            $query = 'india-bbc';
         } else {
             $err = $err . ($rssErr ? ' | RSS fallback also failed: ' . $rssErr : '');
         }

@@ -61,6 +61,13 @@ if ($default_cat < 1 && !empty($ensured['world'])) {
 $default_status = $meta['status'] ?? 'published';
 $default_query = $meta['query'] ?? 'bbc-asia';
 $rss_presets = [
+    'india-bbc' => 'India — BBC',
+    'india-toi' => 'India — Times of India',
+    'india-toi-top' => 'India — TOI Top Stories',
+    'india-hindu' => 'India — The Hindu National',
+    'india-express' => 'India — Indian Express',
+    'india-ndtv' => 'India — NDTV',
+    'india-ht' => 'India — Hindustan Times',
     'bbc-asia' => 'BBC Asia',
     'bbc-world' => 'BBC World',
     'bbc-tech' => 'BBC Technology',
@@ -69,13 +76,14 @@ $rss_presets = [
     'bbc-sport' => 'BBC Sport',
     'nyt-world' => 'NYTimes World',
 ];
+$default_query = $meta['query'] ?? 'india-bbc';
 ?>
 
 <div class="mb-8">
     <h2 class="text-2xl font-bold text-slate-800 dark:text-white">Import Demo News (API / RSS)</h2>
     <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
         Pull live sample headlines into your <strong>existing</strong> posts structure.
-        Use <strong>Full site refresh</strong> to remove old demo posts and rebuild categories, breaking news, and homepage headlines.
+        Use <strong>India-only refresh</strong> for Indian newspapers/feeds (recommended for your portal).
     </p>
 </div>
 
@@ -93,23 +101,28 @@ $rss_presets = [
 <div class="mb-6 rounded-xl border border-amber-200 bg-amber-50 p-5">
     <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
         <div>
-            <h3 class="text-sm font-black uppercase tracking-wider text-amber-900 mb-1">Full site refresh (recommended)</h3>
+            <h3 class="text-sm font-black uppercase tracking-wider text-amber-900 mb-1">Full site refresh</h3>
             <p class="text-xs text-amber-800/90 leading-relaxed max-w-2xl">
-                Deletes <strong>all current posts</strong>, then imports live BBC RSS into categories
-                (World, Politics, Technology, Business, Sports, Asia), rebuilds the
-                <strong>breaking ticker</strong>, updates homepage <strong>hero / slider / trending</strong>,
-                and fills empty <strong>demo ad</strong> slots.
-                Users, settings, and pages are kept.
+                Deletes <strong>all current posts</strong>, then imports live feeds into categories
+                (India News, Politics, Business, Sports, Technology, World), rebuilds
+                <strong>breaking / hero / slider / trending</strong>, and fills demo ads.
             </p>
         </div>
         <form action="handlers/news_import_handler.php" method="POST" class="flex flex-col sm:flex-row gap-2 items-stretch sm:items-end flex-shrink-0"
-            onsubmit="return confirm('This will DELETE all posts and replace them with live RSS news. Continue?');">
+            onsubmit="return confirm('This will DELETE all posts and replace them with live news. Continue?');">
             <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']) ?>">
             <input type="hidden" name="action" value="full_refresh">
             <div>
                 <label class="block text-[10px] font-black uppercase tracking-widest text-amber-700/80 mb-1">Type REFRESH</label>
                 <input type="text" name="confirm_text" required placeholder="REFRESH"
                     class="rounded-md border border-amber-300 px-3 py-2 text-sm w-36 bg-white">
+            </div>
+            <div>
+                <label class="block text-[10px] font-black uppercase tracking-widest text-amber-700/80 mb-1">Scope</label>
+                <select name="scope" class="rounded-md border border-amber-300 px-3 py-2 text-sm bg-white">
+                    <option value="india" selected>India only</option>
+                    <option value="global">Global (BBC)</option>
+                </select>
             </div>
             <div>
                 <label class="block text-[10px] font-black uppercase tracking-widest text-amber-700/80 mb-1">Per category</label>
