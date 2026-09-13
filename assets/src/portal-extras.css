@@ -1,0 +1,284 @@
+/**
+ * Extra utilities used by newer pages (weather, contact, advertise)
+ * that are not yet present in the compiled output.css.
+ */
+.from-sky-500 {
+  --tw-gradient-from: #0ea5e9;
+  --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
+}
+.to-indigo-600 {
+  --tw-gradient-to: var(--color-indigo-600);
+  --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
+}
+.from-emerald-50 {
+  --tw-gradient-from: var(--color-emerald-50);
+  --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
+}
+.via-white {
+  --tw-gradient-via: var(--color-white);
+  --tw-gradient-via-stops: var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-via) var(--tw-gradient-via-position), var(--tw-gradient-to) var(--tw-gradient-to-position);
+  --tw-gradient-stops: var(--tw-gradient-via-stops);
+}
+.to-slate-50 {
+  --tw-gradient-to: var(--color-slate-50);
+  --tw-gradient-stops: var(--tw-gradient-via-stops, var(--tw-gradient-position), var(--tw-gradient-from) var(--tw-gradient-from-position), var(--tw-gradient-to) var(--tw-gradient-to-position));
+}
+
+.text-white\/70 {
+  color: color-mix(in srgb, #fff 70%, transparent);
+}
+@supports (color: color-mix(in lab, red, red)) {
+  .text-white\/70 {
+    color: color-mix(in oklab, var(--color-white) 70%, transparent);
+  }
+}
+.text-white\/90 {
+  color: color-mix(in srgb, #fff 90%, transparent);
+}
+@supports (color: color-mix(in lab, red, red)) {
+  .text-white\/90 {
+    color: color-mix(in oklab, var(--color-white) 90%, transparent);
+  }
+}
+
+.text-emerald-700 {
+  color: var(--color-emerald-700);
+}
+.hover\:bg-emerald-500:hover {
+  background-color: var(--color-emerald-500);
+}
+
+.bg-indigo-100\/60 {
+  background-color: color-mix(in srgb, oklch(93% 0.034 272.788) 60%, transparent);
+}
+@supports (color: color-mix(in lab, red, red)) {
+  .bg-indigo-100\/60 {
+    background-color: color-mix(in oklab, var(--color-indigo-100) 60%, transparent);
+  }
+}
+.bg-rose-100\/50 {
+  background-color: color-mix(in srgb, oklch(94.1% 0.03 12.58) 50%, transparent);
+}
+@supports (color: color-mix(in lab, red, red)) {
+  .bg-rose-100\/50 {
+    background-color: color-mix(in oklab, var(--color-rose-100) 50%, transparent);
+  }
+}
+.border-slate-200\/80 {
+  border-color: color-mix(in srgb, oklch(92.9% 0.013 255.508) 80%, transparent);
+}
+
+.shadow-green-100 {
+  --tw-shadow: 0 10px 15px -3px var(--tw-shadow-color, rgb(220 252 231)), 0 4px 6px -4px var(--tw-shadow-color, rgb(220 252 231));
+  box-shadow: var(--tw-inset-shadow), var(--tw-inset-ring-shadow), var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow);
+}
+
+.tracking-\[0\.25em\] {
+  letter-spacing: 0.25em;
+}
+.rounded-\[1\.75rem\] {
+  border-radius: 1.75rem;
+}
+.opacity-\[0\.035\] {
+  opacity: 0.035;
+}
+
+/* Compact header weather icon tones */
+.weather-tone-sun { color: #fbbf24; }
+.weather-tone-partly { color: #38bdf8; }
+.weather-tone-cloud { color: #94a3b8; }
+.weather-tone-fog { color: #cbd5e1; }
+.weather-tone-rain { color: #38bdf8; }
+.weather-tone-snow { color: #e2e8f0; }
+.weather-tone-storm { color: #a78bfa; }
+
+/* Trending sidebar panel */
+.trending-panel {
+  border: 1px solid #e2e8f0;
+  background: #fff;
+}
+.trending-panel-head {
+  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 45%, #e11d48 100%);
+  color: #fff;
+}
+.trending-panel-head .trending-head-icon {
+  height: 2.5rem;
+  width: 2.5rem;
+  border-radius: 1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+  flex-shrink: 0;
+}
+.trending-panel-head .trending-head-label {
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 0.15rem;
+}
+.trending-panel-head .trending-head-title {
+  font-size: 1.125rem;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  color: #fff;
+}
+.trending-panel-head .trending-head-meta {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.7);
+}
+.trending-panel-body {
+  background:
+    radial-gradient(ellipse 80% 50% at 100% 0%, rgba(99, 102, 241, 0.12), transparent 55%),
+    radial-gradient(ellipse 70% 45% at 0% 100%, rgba(225, 29, 72, 0.08), transparent 50%),
+    linear-gradient(180deg, #eef2ff 0%, #ffffff 50%, #fff1f2 100%);
+}
+.trending-item {
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(199, 210, 254, 0.65);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+.trending-item:hover {
+  background: #fff;
+  border-color: #818cf8;
+  box-shadow: 0 8px 20px -8px rgba(79, 70, 229, 0.28);
+}
+.trending-fallback-icon {
+  height: 2.75rem;
+  width: 2.75rem;
+  border-radius: 0.75rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #e0e7ff;
+  color: #4f46e5;
+  flex-shrink: 0;
+  transition: background-color .2s, color .2s;
+}
+.trending-item:hover .trending-fallback-icon {
+  background: #4f46e5;
+  color: #fff;
+}
+
+/* Comments section */
+.comments-panel {
+  border: 1px solid #e2e8f0;
+  border-radius: 1.5rem;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 10px 30px -12px rgba(15, 23, 42, 0.08);
+}
+.comments-panel-head {
+  padding: 1.25rem 1.5rem;
+  background: linear-gradient(135deg, #312e81 0%, #4f46e5 55%, #7c3aed 100%);
+  color: #fff;
+}
+.comments-panel-head h3 {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  color: #fff;
+}
+.comments-panel-head .comments-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.35rem;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.75);
+}
+.comments-panel-body {
+  padding: 1.25rem 1.5rem 1.5rem;
+  background:
+    radial-gradient(ellipse 90% 60% at 0% 0%, rgba(99, 102, 241, 0.08), transparent 50%),
+    radial-gradient(ellipse 70% 50% at 100% 100%, rgba(124, 58, 237, 0.06), transparent 45%),
+    linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
+}
+.comment-card {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-left: 3px solid #6366f1;
+  border-radius: 1rem;
+  padding: 1rem 1.1rem;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+}
+.comment-avatar {
+  height: 2.5rem;
+  width: 2.5rem;
+  border-radius: 9999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-weight: 800;
+  font-size: 0.875rem;
+  color: #fff;
+  background: linear-gradient(135deg, #4f46e5, #e11d48);
+}
+.comment-form-box {
+  margin-top: 1.25rem;
+  padding: 1.25rem 1.35rem;
+  border-radius: 1.25rem;
+  border: 1px solid #c7d2fe;
+  background:
+    linear-gradient(145deg, rgba(238, 242, 255, 0.95) 0%, rgba(255, 255, 255, 0.98) 50%, rgba(255, 241, 242, 0.7) 100%);
+}
+.comment-form-box h4 {
+  margin: 0 0 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #312e81;
+}
+.comment-form-box .comment-form-hint {
+  margin: 0 0 1rem;
+  font-size: 0.75rem;
+  color: #64748b;
+}
+.comment-form-box input,
+.comment-form-box textarea {
+  background: #fff !important;
+  border-color: #c7d2fe !important;
+}
+.comment-submit-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 0.75rem 1.5rem;
+  border-radius: 9999px;
+  border: 0;
+  box-shadow: 0 10px 20px -10px rgba(79, 70, 229, 0.55);
+  transition: filter .2s, transform .15s;
+}
+.comment-submit-btn:hover {
+  filter: brightness(1.05);
+}
+.comment-submit-btn:disabled {
+  opacity: 0.6;
+}
+.comments-empty {
+  padding: 1rem 1.1rem;
+  border-radius: 1rem;
+  border: 1px dashed #c7d2fe;
+  background: rgba(238, 242, 255, 0.55);
+  color: #475569;
+  font-size: 0.875rem;
+}

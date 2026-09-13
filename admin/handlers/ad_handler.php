@@ -139,6 +139,20 @@ if ($action === 'create' || $action === 'update') {
 
         $_SESSION['success'] = "Ad status updated.";
     }
+} elseif ($action === 'fill_demo') {
+    if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+        $_SESSION['error'] = "Security token mismatch. Please try again.";
+        header("Location: ../ads-manager.php");
+        exit();
+    }
+    require_once '../../config/constants.php';
+    require_once __DIR__ . '/../seed_demo_ads.php';
+    $n = seed_demo_ads($conn);
+    $_SESSION['success'] = $n > 0
+        ? "Added {$n} demo ad banner(s). Replace them with real client creatives or AdSense code."
+        : "Demo ads already exist for those slots.";
+    header("Location: ../ads-manager.php");
+    exit();
 } elseif ($action === 'delete') {
 
     $id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);

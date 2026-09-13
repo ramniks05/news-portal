@@ -26,7 +26,14 @@ if (empty($slider_posts) && $total_published > 0) {
 }
 
 if (empty($curated_trending)) {
-    $trending_stmt = $conn->query("SELECT title, slug, views FROM posts WHERE status='published' ORDER BY views DESC LIMIT 5");
+    $trending_stmt = $conn->query("
+        SELECT p.title, p.slug, p.views, p.featured_image, c.name as category_name, c.slug as category_slug
+        FROM posts p
+        LEFT JOIN categories c ON p.category_id = c.id
+        WHERE p.status='published'
+        ORDER BY p.views DESC
+        LIMIT 5
+    ");
     $curated_trending = $trending_stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
@@ -272,29 +279,69 @@ if (empty($latest) && $total_published > 0) {
                     <a href="<?= get_config('social_youtube') ?>" target="_blank" class="flex items-center justify-center gap-2 bg-[#FF0000] text-white py-3 rounded-2xl text-xs font-bold hover:shadow-lg transition active:scale-95"><i class="fa-brands fa-youtube"></i> LIVE</a>
                 </div>
             </div>
-            <div class="bg-slate-950 rounded-3xl overflow-hidden shadow-2xl">
-                <div class="bg-indigo-600 px-6 py-5">
-                    <h4 class="font-black text-white text-sm uppercase tracking-widest flex items-center gap-2">
-                        <i class="fa-solid fa-fire-flame-curved animate-pulse"></i> Trending Now
-                    </h4>
-                </div>
-                <div class="divide-y divide-slate-800">
-                    <?php if (empty($curated_trending)): ?>
-                        <p class="p-5 text-sm text-slate-500">No trending stories yet.</p>
-                    <?php endif; ?>
-                    <?php foreach ($curated_trending as $index => $t_post): ?>
-                        <div class="flex gap-4 p-5 hover:bg-slate-900 transition group items-start">
-                            <span class="text-3xl font-black text-slate-700 italic group-hover:text-indigo-500 transition-colors">0<?= $index + 1 ?></span>
-                            <div>
-                                <h5 class="text-sm font-bold text-slate-200 leading-tight group-hover:text-white transition line-clamp-2">
-                                    <a href="<?= article_url($t_post['slug']) ?>"><?= htmlspecialchars($t_post['title']) ?></a>
-                                </h5>
-                                <?php if (isset($t_post['views'])): ?>
-                                    <span class="text-[10px] text-slate-500 mt-2 block font-bold uppercase"><i class="fa-regular fa-eye mr-1"></i> <?= number_format($t_post['views']) ?> Views</span>
-                                <?php endif; ?>
-                            </div>
+            <div class="trending-panel rounded-3xl overflow-hidden shadow-soft">
+                <div class="trending-panel-head px-6 py-5 flex items-center justify-between gap-3">
+                    <div class="flex items-center gap-3 min-w-0">
+                        <span class="trending-head-icon">
+                            <i class="fa-solid fa-arrow-trend-up"></i>
+                        </span>
+                        <div class="min-w-0">
+                            <p class="trending-head-label">Most read</p>
+                            <h4 class="trending-head-title">Trending</h4>
                         </div>
-                    <?php endforeach; ?>
+                    </div>
+                    <span class="trending-head-meta flex-shrink-0"><?= count($curated_trending) ?> stories</span>
+                </div>
+
+                <div class="trending-panel-body p-5">
+                    <?php if (empty($curated_trending)): ?>
+                        <p class="text-sm text-slate-400 py-2">No trending stories yet.</p>
+                    <?php else: ?>
+                        <?php
+                        $trend_icons = ['fa-bolt', 'fa-chart-line', 'fa-newspaper', 'fa-rss', 'fa-bookmark'];
+                        ?>
+                        <ul class="space-y-3">
+                            <?php foreach ($curated_trending as $index => $t_post):
+                                $thumb = !empty($t_post['featured_image']) ? get_post_thumbnail($t_post['featured_image']) : '';
+                                $icon = $trend_icons[$index % count($trend_icons)];
+                            ?>
+                                <li>
+                                    <a href="<?= article_url($t_post['slug']) ?>" class="trending-item group flex gap-3 p-3 rounded-2xl items-start transition">
+                                        <?php if ($thumb): ?>
+                                            <div class="flex-shrink-0 w-14 h-14 rounded-xl overflow-hidden bg-white shadow-sm ring-1 ring-slate-100">
+                                                <img src="<?= htmlspecialchars($thumb) ?>" alt="" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy">
+                                            </div>
+                                        <?php else: ?>
+                                            <span class="trending-fallback-icon">
+                                                <i class="fa-solid <?= $icon ?>"></i>
+                                            </span>
+                                        <?php endif; ?>
+                                        <div class="min-w-0 flex-1 pt-0.5">
+                                            <h5 class="text-sm font-bold text-slate-800 leading-snug group-hover:text-indigo-600 transition line-clamp-2">
+                                                <?= htmlspecialchars($t_post['title']) ?>
+                                            </h5>
+                                            <p class="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                                                <?php if (!empty($t_post['category_name'])): ?>
+                                                    <span class="inline-flex items-center gap-1 text-indigo-600">
+                                                        <i class="fa-solid fa-folder-open text-[9px]"></i>
+                                                        <?= htmlspecialchars($t_post['category_name']) ?>
+                                                    </span>
+                                                <?php endif; ?>
+                                                <?php if (isset($t_post['views'])): ?>
+                                                    <span class="inline-flex items-center gap-1">
+                                                        <i class="fa-regular fa-eye"></i><?= number_format((int)$t_post['views']) ?>
+                                                    </span>
+                                                <?php endif; ?>
+                                            </p>
+                                        </div>
+                                        <span class="flex-shrink-0 mt-1 text-slate-300 group-hover:text-indigo-500 transition">
+                                            <i class="fa-solid fa-chevron-right text-xs"></i>
+                                        </span>
+                                    </a>
+                                </li>
+                            <?php endforeach; ?>
+                        </ul>
+                    <?php endif; ?>
                 </div>
             </div>
             <div class="sticky top-24">

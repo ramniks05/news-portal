@@ -109,6 +109,7 @@ $social_links = [
                 <ul class="space-y-3 text-xs font-semibold">
                     <li><a href="<?= page_url('about-us') ?>" class="hover:text-indigo-400 transition-colors">About Us</a></li>
                     <li><a href="<?= page_url('contact-us') ?>" class="hover:text-indigo-400 transition-colors">Contact Us</a></li>
+                    <li><a href="<?= BASE_URL ?>/advertise" class="hover:text-indigo-400 transition-colors">Advertise</a></li>
                     <li><a href="<?= BASE_URL ?>/e-news" class="hover:text-indigo-400 transition-colors">E-News PDF</a></li>
                     <li><a href="<?= BASE_URL ?>/get-portal" class="hover:text-indigo-400 transition-colors">Get This Portal</a></li>
                     <li><a href="<?= page_url('privacy-policy') ?>" class="hover:text-indigo-400 transition-colors">Privacy Policy</a></li>

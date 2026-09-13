@@ -105,77 +105,83 @@ $share_url = article_url($post['slug']);
             }
             $comment_count = count($comments);
             ?>
-            <section class="border-t border-slate-100 pt-10 mb-12" id="comments" x-data="commentForm()">
-                <div class="flex items-center justify-between mb-8">
-                    <h3 class="text-xl font-black text-slate-900 uppercase tracking-tight italic">
-                        Comments <span class="text-slate-400 font-bold not-italic text-base">(<?= $comment_count ?>)</span>
-                    </h3>
-                </div>
+            <section class="pt-10 mb-12" id="comments" x-data="commentForm()">
+                <div class="comments-panel">
+                    <div class="comments-panel-head flex items-center justify-between gap-3">
+                        <div>
+                            <h3><i class="fa-regular fa-comments mr-2"></i>Comments</h3>
+                            <p class="comments-count"><?= (int)$comment_count ?> reader<?= $comment_count === 1 ? '' : 's' ?> joined the discussion</p>
+                        </div>
+                    </div>
 
-                <?php if ($comment_count > 0): ?>
-                    <div class="space-y-6 mb-10">
-                        <?php foreach ($comments as $comment): ?>
-                            <div class="bg-white border border-slate-100 rounded-2xl p-5 shadow-sm">
-                                <div class="flex items-start gap-3 mb-3">
-                                    <div class="h-10 w-10 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold flex-shrink-0">
-                                        <?= strtoupper(substr($comment['name'], 0, 1)) ?>
+                    <div class="comments-panel-body">
+                        <?php if ($comment_count > 0): ?>
+                            <div class="space-y-4 mb-2">
+                                <?php foreach ($comments as $comment): ?>
+                                    <div class="comment-card">
+                                        <div class="flex items-start gap-3 mb-3">
+                                            <div class="comment-avatar">
+                                                <?= strtoupper(substr($comment['name'], 0, 1)) ?>
+                                            </div>
+                                            <div class="min-w-0">
+                                                <p class="font-bold text-slate-900 text-sm"><?= htmlspecialchars($comment['name']) ?></p>
+                                                <p class="text-[11px] text-slate-400 font-medium"><?= date('M d, Y · h:i A', strtotime($comment['created_at'])) ?></p>
+                                            </div>
+                                        </div>
+                                        <p class="text-slate-600 text-sm leading-relaxed whitespace-pre-wrap"><?= htmlspecialchars($comment['content']) ?></p>
                                     </div>
-                                    <div class="min-w-0">
-                                        <p class="font-bold text-slate-900 text-sm"><?= htmlspecialchars($comment['name']) ?></p>
-                                        <p class="text-[11px] text-slate-400 font-medium"><?= date('M d, Y · h:i A', strtotime($comment['created_at'])) ?></p>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php else: ?>
+                            <div class="comments-empty mb-2">
+                                <i class="fa-regular fa-message mr-1 text-indigo-500"></i>
+                                No comments yet. Be the first to share your thoughts.
+                            </div>
+                        <?php endif; ?>
+
+                        <div class="comment-form-box">
+                            <h4>Leave a comment</h4>
+                            <p class="comment-form-hint">Comments are reviewed before they appear publicly.</p>
+
+                            <form @submit.prevent="submitComment" class="space-y-4">
+                                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']) ?>">
+                                <div class="hidden" aria-hidden="true">
+                                    <label>Website</label>
+                                    <input type="text" x-model="formData.website" tabindex="-1" autocomplete="off">
+                                </div>
+
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Name *</label>
+                                        <input type="text" x-model="formData.name" required maxlength="100"
+                                            class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-sm font-medium focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none">
+                                    </div>
+                                    <div>
+                                        <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Email * <span class="normal-case tracking-normal font-medium text-slate-400">(not published)</span></label>
+                                        <input type="email" x-model="formData.email" required maxlength="150"
+                                            class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-sm font-medium focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none">
                                     </div>
                                 </div>
-                                <p class="text-slate-600 text-sm leading-relaxed whitespace-pre-wrap"><?= htmlspecialchars($comment['content']) ?></p>
-                            </div>
-                        <?php endforeach; ?>
+                                <div>
+                                    <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Comment *</label>
+                                    <textarea x-model="formData.content" required rows="4" maxlength="2000"
+                                        class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-sm font-medium focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none resize-y"
+                                        placeholder="Share your thoughts..."></textarea>
+                                </div>
+
+                                <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+                                    <button type="submit" :disabled="loading" class="comment-submit-btn">
+                                        <span x-show="!loading"><i class="fa-solid fa-paper-plane mr-1"></i> Post Comment</span>
+                                        <span x-show="loading" x-cloak>Submitting...</span>
+                                    </button>
+                                    <p x-show="message" x-cloak
+                                        class="text-sm font-medium"
+                                        :class="status === 'success' ? 'text-green-600' : 'text-red-600'"
+                                        x-text="message"></p>
+                                </div>
+                            </form>
+                        </div>
                     </div>
-                <?php else: ?>
-                    <p class="text-sm text-slate-500 mb-8">No comments yet. Be the first to share your thoughts.</p>
-                <?php endif; ?>
-
-                <div class="bg-slate-50 border border-slate-100 rounded-3xl p-6 md:p-8">
-                    <h4 class="text-sm font-black uppercase tracking-widest text-slate-800 mb-2">Leave a comment</h4>
-                    <p class="text-xs text-slate-500 mb-6">Comments are reviewed before they appear publicly.</p>
-
-                    <form @submit.prevent="submitComment" class="space-y-4">
-                        <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']) ?>">
-                        <!-- Honeypot -->
-                        <div class="hidden" aria-hidden="true">
-                            <label>Website</label>
-                            <input type="text" x-model="formData.website" tabindex="-1" autocomplete="off">
-                        </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Name *</label>
-                                <input type="text" x-model="formData.name" required maxlength="100"
-                                    class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-sm font-medium focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none">
-                            </div>
-                            <div>
-                                <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Email * <span class="normal-case tracking-normal font-medium text-slate-400">(not published)</span></label>
-                                <input type="email" x-model="formData.email" required maxlength="150"
-                                    class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-sm font-medium focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none">
-                            </div>
-                        </div>
-                        <div>
-                            <label class="block text-[10px] font-black uppercase tracking-widest text-slate-400 mb-2">Comment *</label>
-                            <textarea x-model="formData.content" required rows="4" maxlength="2000"
-                                class="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white text-sm font-medium focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none resize-y"
-                                placeholder="Share your thoughts..."></textarea>
-                        </div>
-
-                        <div class="flex flex-col sm:flex-row sm:items-center gap-4">
-                            <button type="submit" :disabled="loading"
-                                class="inline-flex items-center justify-center gap-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white text-xs font-black uppercase tracking-widest px-6 py-3 rounded-xl shadow-lg shadow-indigo-100 transition">
-                                <span x-show="!loading">Post Comment</span>
-                                <span x-show="loading" x-cloak>Submitting...</span>
-                            </button>
-                            <p x-show="message" x-cloak
-                                class="text-sm font-medium"
-                                :class="status === 'success' ? 'text-green-600' : 'text-red-600'"
-                                x-text="message"></p>
-                        </div>
-                    </form>
                 </div>
             </section>
 
@@ -206,24 +212,69 @@ $share_url = article_url($post['slug']);
                     <?= get_ad('sidebar_top') ?>
                 </div>
 
-                <div class="bg-slate-950 rounded-[2.5rem] overflow-hidden shadow-2xl">
-                    <div class="bg-indigo-600 px-7 py-6">
-                        <h4 class="font-black text-white text-xs uppercase tracking-[0.2em] flex items-center gap-3">
-                            <i class="fa-solid fa-fire-flame-curved animate-pulse"></i> Trending Now
-                        </h4>
+                <div class="trending-panel rounded-3xl overflow-hidden shadow-soft">
+                    <div class="trending-panel-head px-6 py-5 flex items-center justify-between gap-3">
+                        <div class="flex items-center gap-3 min-w-0">
+                            <span class="trending-head-icon">
+                                <i class="fa-solid fa-arrow-trend-up"></i>
+                            </span>
+                            <div class="min-w-0">
+                                <p class="trending-head-label">Most read</p>
+                                <h4 class="trending-head-title">Trending</h4>
+                            </div>
+                        </div>
+                        <span class="trending-head-meta flex-shrink-0"><?= count($trending) ?> stories</span>
                     </div>
-                    <div class="divide-y divide-slate-800">
-                        <?php foreach ($trending as $index => $t_post): ?>
-                            <a href="<?= article_url($t_post['slug']) ?>" class="flex gap-5 p-6 hover:bg-slate-900 transition group items-center">
-                                <span class="text-3xl font-black text-slate-800 italic group-hover:text-indigo-500 transition-colors">0<?= $index + 1 ?></span>
-                                <div class="min-w-0">
-                                    <h5 class="text-sm font-bold text-slate-200 leading-tight group-hover:text-white transition line-clamp-2">
-                                        <?= htmlspecialchars($t_post['title']) ?>
-                                    </h5>
-                                    <span class="text-[9px] font-black text-slate-500 mt-2 block uppercase tracking-widest"><?= number_format($t_post['views']) ?> Readers</span>
-                                </div>
-                            </a>
-                        <?php endforeach; ?>
+
+                    <div class="trending-panel-body p-5">
+                        <?php if (empty($trending)): ?>
+                            <p class="text-sm text-slate-400 py-2">No trending stories yet.</p>
+                        <?php else: ?>
+                            <?php
+                            $trend_icons = ['fa-bolt', 'fa-chart-line', 'fa-newspaper', 'fa-rss', 'fa-bookmark'];
+                            ?>
+                            <ul class="space-y-3">
+                                <?php foreach ($trending as $index => $t_post):
+                                    $thumb = !empty($t_post['featured_image']) ? get_post_thumbnail($t_post['featured_image']) : '';
+                                    $icon = $trend_icons[$index % count($trend_icons)];
+                                ?>
+                                    <li>
+                                        <a href="<?= article_url($t_post['slug']) ?>" class="trending-item group flex gap-3 p-3 rounded-2xl items-start transition">
+                                            <?php if ($thumb): ?>
+                                                <div class="flex-shrink-0 w-14 h-14 rounded-xl overflow-hidden bg-white shadow-sm ring-1 ring-slate-100">
+                                                    <img src="<?= htmlspecialchars($thumb) ?>" alt="" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy">
+                                                </div>
+                                            <?php else: ?>
+                                            <span class="trending-fallback-icon">
+                                                <i class="fa-solid <?= $icon ?>"></i>
+                                            </span>
+                                            <?php endif; ?>
+                                            <div class="min-w-0 flex-1 pt-0.5">
+                                                <h5 class="text-sm font-bold text-slate-800 leading-snug group-hover:text-indigo-600 transition line-clamp-2">
+                                                    <?= htmlspecialchars($t_post['title']) ?>
+                                                </h5>
+                                                <p class="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                                                    <?php if (!empty($t_post['category_name'])): ?>
+                                                        <span class="inline-flex items-center gap-1 text-indigo-600">
+                                                            <i class="fa-solid fa-folder-open text-[9px]"></i>
+                                                            <?= htmlspecialchars($t_post['category_name']) ?>
+                                                        </span>
+                                                    <?php endif; ?>
+                                                    <?php if (isset($t_post['views'])): ?>
+                                                        <span class="inline-flex items-center gap-1">
+                                                            <i class="fa-regular fa-eye"></i><?= number_format((int)$t_post['views']) ?>
+                                                        </span>
+                                                    <?php endif; ?>
+                                                </p>
+                                            </div>
+                                            <span class="flex-shrink-0 mt-1 text-slate-300 group-hover:text-indigo-500 transition">
+                                                <i class="fa-solid fa-chevron-right text-xs"></i>
+                                            </span>
+                                        </a>
+                                    </li>
+                                <?php endforeach; ?>
+                            </ul>
+                        <?php endif; ?>
                     </div>
                 </div>
 

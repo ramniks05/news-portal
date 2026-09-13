@@ -14,6 +14,12 @@ function get_weather_data()
     if (is_file($cache_file) && (time() - filemtime($cache_file)) < $cache_ttl) {
         $cached = json_decode(file_get_contents($cache_file), true);
         if (is_array($cached)) {
+            if (empty($cached['tone'])) {
+                $meta = weather_code_meta((int)($cached['code'] ?? 0));
+                $cached['tone'] = $meta['tone'];
+                $cached['label'] = $cached['label'] ?? $meta['label'];
+                $cached['icon'] = $cached['icon'] ?? $meta['icon'];
+            }
             return $cached;
         }
     }
@@ -49,6 +55,7 @@ function get_weather_data()
             'code' => 0,
             'label' => 'Unavailable',
             'icon' => 'fa-cloud',
+            'tone' => 'cloud',
         ];
     }
 
@@ -62,6 +69,7 @@ function get_weather_data()
         'code' => $code,
         'label' => $map['label'],
         'icon' => $map['icon'],
+        'tone' => $map['tone'],
     ];
 
     @file_put_contents($cache_file, json_encode($out));
@@ -71,15 +79,15 @@ function get_weather_data()
 function weather_code_meta($code)
 {
     $code = (int)$code;
-    if ($code === 0) return ['label' => 'Clear', 'icon' => 'fa-sun'];
-    if (in_array($code, [1, 2], true)) return ['label' => 'Partly cloudy', 'icon' => 'fa-cloud-sun'];
-    if ($code === 3) return ['label' => 'Overcast', 'icon' => 'fa-cloud'];
-    if (in_array($code, [45, 48], true)) return ['label' => 'Fog', 'icon' => 'fa-smog'];
-    if ($code >= 51 && $code <= 67) return ['label' => 'Rain', 'icon' => 'fa-cloud-rain'];
-    if ($code >= 71 && $code <= 77) return ['label' => 'Snow', 'icon' => 'fa-snowflake'];
-    if ($code >= 80 && $code <= 82) return ['label' => 'Showers', 'icon' => 'fa-cloud-showers-heavy'];
-    if ($code >= 95) return ['label' => 'Thunderstorm', 'icon' => 'fa-cloud-bolt'];
-    return ['label' => 'Cloudy', 'icon' => 'fa-cloud'];
+    if ($code === 0) return ['label' => 'Sunny', 'icon' => 'fa-sun', 'tone' => 'sun'];
+    if (in_array($code, [1, 2], true)) return ['label' => 'Partly cloudy', 'icon' => 'fa-cloud-sun', 'tone' => 'partly'];
+    if ($code === 3) return ['label' => 'Cloudy', 'icon' => 'fa-cloud', 'tone' => 'cloud'];
+    if (in_array($code, [45, 48], true)) return ['label' => 'Fog', 'icon' => 'fa-smog', 'tone' => 'fog'];
+    if ($code >= 51 && $code <= 67) return ['label' => 'Rain', 'icon' => 'fa-cloud-rain', 'tone' => 'rain'];
+    if ($code >= 71 && $code <= 77) return ['label' => 'Snow', 'icon' => 'fa-snowflake', 'tone' => 'snow'];
+    if ($code >= 80 && $code <= 82) return ['label' => 'Showers', 'icon' => 'fa-cloud-showers-heavy', 'tone' => 'rain'];
+    if ($code >= 95) return ['label' => 'Storm', 'icon' => 'fa-cloud-bolt', 'tone' => 'storm'];
+    return ['label' => 'Cloudy', 'icon' => 'fa-cloud', 'tone' => 'cloud'];
 }
 
 function get_latest_e_news($limit = 5)

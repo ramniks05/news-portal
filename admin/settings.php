@@ -154,6 +154,32 @@ if (empty($_SESSION['csrf_token'])) {
                     </div>
 
                     <div class="border-t border-slate-200 dark:border-slate-700 pt-6 mt-2">
+                        <h4 class="text-sm font-bold text-slate-800 dark:text-white mb-2">Demo news API (optional)</h4>
+                        <p class="text-xs text-slate-500 mb-4">Used by Admin → News Posts → Import from API. Free keys from NewsAPI.org or GNews.io.</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">Provider</label>
+                                <select name="news_api_provider" class="w-full rounded-md border border-slate-400 px-3 py-2 text-sm dark:bg-slate-900 dark:border-slate-600 dark:text-white">
+                                    <option value="rss" <?= get_setting('news_api_provider', 'rss') === 'rss' ? 'selected' : '' ?>>RSS (no key)</option>
+                                    <option value="newsapi" <?= get_setting('news_api_provider', 'rss') === 'newsapi' ? 'selected' : '' ?>>NewsAPI.org</option>
+                                    <option value="gnews" <?= get_setting('news_api_provider', 'rss') === 'gnews' ? 'selected' : '' ?>>GNews.io</option>
+                                </select>
+                            </div>
+                            <div class="md:col-span-1"></div>
+                            <div>
+                                <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">NewsAPI key</label>
+                                <input type="password" name="newsapi_key" value="<?= htmlspecialchars(get_setting('newsapi_key', '')) ?>" autocomplete="off"
+                                    class="w-full rounded-md border border-slate-400 px-3 py-2 text-sm dark:bg-slate-900 dark:border-slate-600 dark:text-white">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">GNews key</label>
+                                <input type="password" name="gnews_key" value="<?= htmlspecialchars(get_setting('gnews_key', '')) ?>" autocomplete="off"
+                                    class="w-full rounded-md border border-slate-400 px-3 py-2 text-sm dark:bg-slate-900 dark:border-slate-600 dark:text-white">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="border-t border-slate-200 dark:border-slate-700 pt-6 mt-2">
                         <h4 class="text-sm font-bold text-slate-800 dark:text-white mb-2">Sales demo credentials (public page)</h4>
                         <p class="text-xs text-slate-500 mb-4">Shown on <code>/get-portal</code> when Demo Mode is ON. Create matching admin user in Users / Profile.</p>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">

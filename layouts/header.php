@@ -11,6 +11,12 @@ $site_desc = get_config('site_description');
 $logo = get_config('logo_path');
 $favicon = get_config('favicon_path');
 
+require_once __DIR__ . '/../helpers/weather_functions.php';
+$header_weather = get_weather_data();
+if (empty($header_weather['tone'])) {
+    $header_weather['tone'] = 'cloud';
+}
+
 $current_slug = $_GET['slug'] ?? '';
 
 if (!function_exists('category_url')) {
@@ -34,6 +40,7 @@ if (!function_exists('category_url')) {
     <?php endif; ?>
     <?php include 'meta_tags.php'; ?>
     <link rel="stylesheet" href="<?= BASE_URL ?>/assets/src/output.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>/assets/src/portal-extras.css">
 
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
@@ -166,22 +173,34 @@ if (!function_exists('category_url')) {
         });
     </script>
 
-    <div class="bg-slate-900 text-slate-300 text-[11px] font-medium py-2 hidden md:block border-b border-slate-800">
-        <div class="container mx-auto px-4 flex justify-between items-center">
-            <div class="flex items-center gap-4">
-                <span><i class="fa-regular fa-clock mr-1.5 text-indigo-400"></i> <?= date('l, F j, Y') ?></span>
-                <span class="text-slate-600">|</span>
-                <a href="<?= BASE_URL ?>/contact-us" class="hover:text-white transition">Advertise</a>
-                <span class="text-slate-600">|</span>
-                <a href="<?= BASE_URL ?>/e-news" class="hover:text-white transition">E-News</a>
-                <span class="text-slate-600">|</span>
-                <a href="<?= BASE_URL ?>/get-portal" class="hover:text-white transition">Get Portal</a>
-                <span class="text-slate-600">|</span>
-                <a href="<?= BASE_URL ?>/about-us" class="hover:text-white transition">About Us</a>
-                <span class="text-slate-600">|</span>
-                <a href="<?= BASE_URL ?>/contact-us" class="hover:text-white transition">Contact Us</a>
+    <div class="bg-slate-900 text-slate-300 text-[11px] font-medium py-1.5 md:py-2 border-b border-slate-800">
+        <div class="container mx-auto px-4 flex justify-between items-center gap-3">
+            <div class="flex items-center gap-3 md:gap-4 min-w-0">
+                <span class="hidden sm:inline-flex items-center flex-shrink-0">
+                    <i class="fa-regular fa-clock mr-1.5 text-indigo-400"></i> <?= date('l, F j, Y') ?>
+                </span>
+                <span class="hidden sm:inline text-slate-600 flex-shrink-0">|</span>
+                <span class="inline-flex items-center gap-1.5 min-w-0 text-slate-200" title="<?= htmlspecialchars(($header_weather['city'] ?? '') . ' — ' . ($header_weather['label'] ?? '')) ?>">
+                    <i class="fa-solid <?= htmlspecialchars($header_weather['icon'] ?? 'fa-cloud') ?> weather-tone-<?= htmlspecialchars($header_weather['tone'] ?? 'cloud') ?>"></i>
+                    <span class="font-semibold text-white truncate"><?= htmlspecialchars($header_weather['city'] ?? 'Weather') ?></span>
+                    <?php if ($header_weather['temp'] !== null): ?>
+                        <span class="font-bold text-white flex-shrink-0"><?= (int)$header_weather['temp'] ?>°</span>
+                        <span class="text-slate-500 flex-shrink-0">·</span>
+                        <span class="truncate text-slate-400"><?= htmlspecialchars($header_weather['label'] ?? '') ?></span>
+                    <?php else: ?>
+                        <span class="truncate text-slate-500">—</span>
+                    <?php endif; ?>
+                </span>
+                <span class="hidden lg:inline text-slate-600 flex-shrink-0">|</span>
+                <div class="hidden lg:flex items-center gap-4 flex-shrink-0">
+                    <a href="<?= BASE_URL ?>/advertise" class="hover:text-white transition">Advertise</a>
+                    <a href="<?= BASE_URL ?>/e-news" class="hover:text-white transition">E-News</a>
+                    <a href="<?= BASE_URL ?>/get-portal" class="hover:text-white transition">Get Portal</a>
+                    <a href="<?= BASE_URL ?>/about-us" class="hover:text-white transition">About Us</a>
+                    <a href="<?= BASE_URL ?>/contact-us" class="hover:text-white transition">Contact Us</a>
+                </div>
             </div>
-            <div class="flex gap-4">
+            <div class="hidden md:flex gap-4 flex-shrink-0">
                 <?php
                 $socials = [['facebook', 'social_facebook', 'hover:text-[#1877F2]'], ['x-twitter', 'social_twitter', 'hover:text-white'], ['instagram', 'social_instagram', 'hover:text-[#E4405F]'], ['youtube', 'social_youtube', 'hover:text-[#FF0000]']];
                 foreach ($socials as $soc):
@@ -259,7 +278,7 @@ if (!function_exists('category_url')) {
                 </nav>
 
                 <div class="flex items-center gap-2 md:gap-4">
-                    <a href="<?= BASE_URL ?>/contact-us" class="relative group flex items-center">
+                    <a href="<?= BASE_URL ?>/advertise" class="relative group flex items-center">
                         <span class="absolute inset-0 rounded-full bg-amber-400 animate-ping opacity-75 group-hover:hidden"></span>
                         <div class="relative bg-amber-500 text-white px-3 py-1.5 md:px-4 md:py-2 rounded-full flex items-center gap-1.5 shadow-lg shadow-amber-200 transition-transform active:scale-95">
                             <i class="fa-solid fa-bullhorn text-[10px] md:text-xs"></i>
@@ -357,6 +376,7 @@ if (!function_exists('category_url')) {
                     <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3 px-2">Pages</h3>
                     <nav class="space-y-1">
                         <a href="<?= BASE_URL ?>/about-us" class="block px-3 py-2 text-sm text-slate-600 hover:text-indigo-600 transition">About Us</a>
+                        <a href="<?= BASE_URL ?>/advertise" class="block px-3 py-2 text-sm text-slate-600 hover:text-indigo-600 transition">Advertise</a>
                         <a href="<?= BASE_URL ?>/e-news" class="block px-3 py-2 text-sm text-slate-600 hover:text-indigo-600 transition">E-News PDF</a>
                         <a href="<?= BASE_URL ?>/get-portal" class="block px-3 py-2 text-sm text-slate-600 hover:text-indigo-600 transition">Get This Portal</a>
                         <a href="<?= BASE_URL ?>/contact-us" class="block px-3 py-2 text-sm text-slate-600 hover:text-indigo-600 transition">Contact Us</a>

@@ -130,7 +130,14 @@ function get_trending_news($limit = 5)
         return array_slice($curated, 0, $limit);
     }
 
-    $stmt = $conn->prepare("SELECT title, slug, views, featured_image FROM posts WHERE status = 'published' ORDER BY views DESC LIMIT :limit");
+    $stmt = $conn->prepare("
+        SELECT p.title, p.slug, p.views, p.featured_image, c.name as category_name, c.slug as category_slug
+        FROM posts p
+        LEFT JOIN categories c ON p.category_id = c.id
+        WHERE p.status = 'published'
+        ORDER BY p.views DESC
+        LIMIT :limit
+    ");
     $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
     $stmt->execute();
     return $stmt->fetchAll();

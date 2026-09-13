@@ -31,11 +31,30 @@ foreach ($all_ads as $ad) {
             <h2 class="text-2xl font-bold text-slate-800 dark:text-white">Ads Manager</h2>
             <p class="text-sm text-slate-500 dark:text-slate-400">Manage banner positions and sizes.</p>
         </div>
-        <button @click="openModal('add')"
-            class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-5 rounded-lg shadow-lg flex items-center transition-transform hover:-translate-y-0.5">
-            <i class="fa-solid fa-plus mr-2"></i> Create Ad
-        </button>
+        <div class="flex flex-col sm:flex-row gap-2">
+            <form action="handlers/ad_handler.php" method="POST" onsubmit="return confirm('Fill empty slots with demo placeholder banners?');">
+                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']) ?>">
+                <input type="hidden" name="action" value="fill_demo">
+                <button type="submit" class="bg-slate-900 hover:bg-indigo-600 text-white font-bold py-2.5 px-5 rounded-lg shadow flex items-center transition">
+                    <i class="fa-solid fa-wand-magic-sparkles mr-2"></i> Fill demo ads
+                </button>
+            </form>
+            <button @click="openModal('add')"
+                class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-5 rounded-lg shadow-lg flex items-center transition-transform hover:-translate-y-0.5">
+                <i class="fa-solid fa-plus mr-2"></i> Create Ad
+            </button>
+        </div>
     </div>
+
+    <div class="mb-6 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/40 p-4 text-sm text-slate-600 dark:text-slate-300">
+        <p class="font-bold text-slate-800 dark:text-white mb-1">How ads work (no free “ad news” API)</p>
+        <ul class="list-disc pl-5 space-y-1 text-xs leading-relaxed">
+            <li><strong>Local clients:</strong> upload image banners here (best for city news portals).</li>
+            <li><strong>Google AdSense:</strong> create an ad of type <em>Code</em> and paste the AdSense unit snippet, or put Auto ads in Settings → Scripts.</li>
+            <li><strong>Demo fill:</strong> placeholder banners that link to your Advertise page (for sales demos only).</li>
+        </ul>
+    </div>
+
     <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
 
         <?php foreach ($locations as $loc_key => $loc_label): ?>

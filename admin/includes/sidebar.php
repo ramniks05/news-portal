@@ -18,7 +18,7 @@ if (!function_exists('is_active')) {
 }
 
 
-$post_related_pages = ['add-post.php', 'manage-posts.php', 'edit-post.php', 'tags.php'];
+$post_related_pages = ['add-post.php', 'manage-posts.php', 'edit-post.php', 'tags.php', 'import-news.php'];
 $is_post_section = in_array($current_page, $post_related_pages);
 ?>
 
@@ -70,6 +70,11 @@ $is_post_section = in_array($current_page, $post_related_pages);
                     <a href="manage-posts.php" class="group flex w-full items-center rounded-md pl-10 pr-2 py-2 text-sm font-medium transition-colors <?= is_active(['manage-posts.php', 'edit-post.php']) ?>">
                         <span class="w-1.5 h-1.5 rounded-full bg-current mr-3 opacity-50"></span>
                         All Posts
+                    </a>
+
+                    <a href="import-news.php" class="group flex w-full items-center rounded-md pl-10 pr-2 py-2 text-sm font-medium transition-colors <?= is_active('import-news.php') ?>">
+                        <span class="w-1.5 h-1.5 rounded-full bg-current mr-3 opacity-50"></span>
+                        Import from API
                     </a>
                 </div>
             </div>
